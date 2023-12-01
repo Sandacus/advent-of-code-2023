@@ -1,12 +1,14 @@
 use std::fs::read_to_string;
 fn main() {
-    println!("The final answer is: {}", part1("input1.txt"));
-}
-
-fn part1(data: &str) -> String {
-    let inputs = get_input(data);
+    
+    let inputs = get_input("test1.txt");
     println!("The test case is: {:?}", inputs);
 
+    println!("The final answer is: {}", part1(inputs));
+}
+
+fn part1(inputs: Vec<String>) -> String {
+    
     let valid_chars: Vec<char> = vec!['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     
     let mut answer: u32 = 0;
@@ -47,7 +49,9 @@ fn part1(data: &str) -> String {
     answer.to_string()
 }
 
-fn get_input(file_path: &str) -> Vec<String> {
+fn get_input(file_name: &str) -> Vec<String> {
+    let mut file_path: String = std::env::current_dir().unwrap().into_os_string().into_string().unwrap();
+    file_path = file_path + "/" + file_name;
     read_to_string(file_path)
         .unwrap()
         .lines()
@@ -61,7 +65,10 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let result: String = part1("day1example.txt");
+        let result: String = part1(vec!["1abc2".to_string(),
+                                                "pqr3stu8vwx".to_string(),
+                                                "a1b2c3d4e5f".to_string(),
+                                                "treb7uchet".to_string()]);
         let answer: String = "142".to_string();
         assert_eq!(result, answer);
     }
