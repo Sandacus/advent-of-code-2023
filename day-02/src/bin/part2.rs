@@ -3,8 +3,8 @@ use std::collections::HashMap;
 fn main() {
     println!("Hello day 2!");
     let input: Vec<String> = get_input("input1.txt");
-    let answer: String = part1(input);
-    println!("The input is: {:?}", answer)
+    let answer: String = part2(input);
+    println!("The answer is: {:?}", answer)
 
 }
 
@@ -23,11 +23,8 @@ fn get_input(file_name: &str) -> Vec<String> {
         .collect()
 }
 
-fn part1(input: Vec<String>) -> String {
-    let mut game_bag: HashMap<&str, u32> = HashMap::new();
-    game_bag.insert("red", 12);
-    game_bag.insert("green", 13);
-    game_bag.insert("blue", 14);
+fn part2(input: Vec<String>) -> String {
+    
     // Algorithm design
     // 1) loop through games
     // 2) for each game you need to identify the 
@@ -40,6 +37,10 @@ fn part1(input: Vec<String>) -> String {
 
     let mut score: u32 = 0;
     for data in input {
+        let mut game_bag: HashMap<&str, u32> = HashMap::new();
+    game_bag.insert("red", 0);
+    game_bag.insert("green", 0);
+    game_bag.insert("blue", 0);
 
         let game: Vec<&str> = data.split(":").collect();
         let game_id_vec: Vec<&str> = game[0].split(" ").collect();
@@ -51,7 +52,6 @@ fn part1(input: Vec<String>) -> String {
                                     .iter()
                                     .map(|s| s.split(",").map(String::from).collect())
                                     .collect();
-        let mut allowed_flag: bool = true;
         
         println!("Game ID is {:?} and the results are {:?}", game_id, game_subset_colours);
 
@@ -62,31 +62,32 @@ fn part1(input: Vec<String>) -> String {
                 match colour_vec[2] {
                     "red" => {
                         println!("There are {:?} red, in game ID {:?}", colour_vec[1], game_id);
-                        if colour_vec[1].parse::<u32>().unwrap() > game_bag["red"] {allowed_flag = false};
+                        if colour_vec[1].parse::<u32>().unwrap() > game_bag["red"] {
+                            game_bag.entry("red").and_modify(|red| *red = colour_vec[1].parse::<u32>().unwrap()).or_insert(100);
+                            };
                     },
                     "green" => {
                         println!("There are {:?} green", colour_vec[1]);
-                        if colour_vec[1].parse::<u32>().unwrap() > game_bag["green"] {allowed_flag = false};
+                        if colour_vec[1].parse::<u32>().unwrap() > game_bag["green"] {
+                            game_bag.entry("green").and_modify(|green| *green = colour_vec[1].parse::<u32>().unwrap()).or_insert(100);
+                            };
                     },
                     "blue" => {
                         println!("There are {:?} blue", colour_vec[1]);
-                        if colour_vec[1].parse::<u32>().unwrap() > game_bag["blue"] {allowed_flag = false};
+                        if colour_vec[1].parse::<u32>().unwrap() > game_bag["blue"] {
+                            game_bag.entry("blue").and_modify(|blue| *blue = colour_vec[1].parse::<u32>().unwrap()).or_insert(100);
+                            };
                     },
                     _ => {println!("didnt' match!")},
                 }
-
-                if !allowed_flag {break;}
                 
             }
-            
-            
+               
         }
 
-        if allowed_flag {
-            score = score + game_id.parse::<u32>().unwrap();
-        }
-
+        score = score + game_bag.values().product::<u32>();
     }
+    
     score.to_string()
 }
 
