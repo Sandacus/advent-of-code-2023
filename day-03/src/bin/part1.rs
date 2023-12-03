@@ -1,15 +1,19 @@
+use std::collections::{HashMap, BTreeMap};
+
 fn main() {
     println!("Hello day 3!");
-    let (num_lines, line_width) = get_input("test1.txt");
+
+    let (engine_schematic, num_lines, line_width) = get_input("test2.txt");
     println!("number of lines: {},\nline width: {}", num_lines, line_width);
-    let engine_schematic = include_str!("test1.txt");
-    println!("{:?}", engine_schematic);
-    // let answer: String = part1(input);
-    // println!("The input is: {:?}", answer)
+    println!("The engine schematic looks like this => {:?}", engine_schematic);
+
+    let input: (Vec<String>, usize, usize) = (engine_schematic, num_lines, line_width);
+    let answer: String = part1(input);
+    println!("The answer is: {:?}", answer)
 }
 
 
-fn get_input(file_name: &str) -> (usize, usize) {
+fn get_input(file_name: &str) -> (Vec<String>, usize, usize) {
 
     // return line width, and number of lines
     
@@ -30,82 +34,221 @@ fn get_input(file_name: &str) -> (usize, usize) {
 
     let line_width: usize = input_vec[0].len();
     
-    let num_lines: usize= input_vec.len();
+    let num_lines: usize = input_vec.len();
     
-    return (line_width, num_lines);
+    return (input_vec, line_width, num_lines);
 }
 
 
-fn part1(input: Vec<String>) -> String {
+fn test_number_backwards() {
+    //todo
+}
+
+
+fn test_number_forwards() {
+    //todo
+}
+
+
+fn part1(input: (Vec<String>, usize, usize)) -> String {
     
-    // Algorithm design
     /*
+    Algorithm design
 
-    ...
-    .1.
-    ...
-    ___ _ _ ___
-    ...|.1.|...
-    allowable places behind: n-1, n-2, n-3, n-4
-    allowable places in front: n+1, n+2, n+3, n+4
-
-    ...
-    1..
-    ...
-    __   _  __
-    ...|1..|...
-    allowable places behind: n-2, n-3
-    allowable places in front: n+1, n+3, n+4
-
-    1..
-    ...
-    ...
-     _  __
-    1..|...|...
-
-    .1.
-    ...
-    ...
-    _ _ ___  
-    .1.|...|...
-    
-    .....
-    ..1..
-    .....
-     ___   _ _   ___
-    .....|..1..|.....
-    allowable places behind: n-1, n-4, n-5, n-6
-    allowable places in front: n+1, n+4, n+5, n+6
-
-    .....
-    .1...
-    .....
-    ___   _ _   ___
-    .....|.1...|.....
-    allowable places behind: n-1, n-4, n-5, n-6
-    allowable places in front: n+1, n+4, n+5, n+6
-
+    Edge location
     .....
     1....
     .....
     __     _    __
     .....|1....|.....
-    allowable places behind: n-4, n-5
-    allowable places in front: n+1, n+5, n+6
+    allowable places behind: index-(line width -1), index-linewidth
+    allowable places in front: index+1, index+linewidth, index+linewidth+1
 
-    1) Combine all lines to make 1 long string with total = width x line numbers
-    2) Use the width to know whether character needs an edge rule or general rule
-    3) 
+    Non-edge location
+    .....
+    ..1..
+    .....
+     ___   _ _   ___
+    .....|..1..|.....
+    allowable places behind: index-1, index-(linewidth-1), index-linewidth, index-(linewidth+1)
+    allowable places in front: index+1, index+(linewidth-1), n+linewidth, n+(linewidth+1)
 
-     */
 
-    
-    for row in input {
-        println!("{:?}", row);
+    1) Create a hashmap of all numbers using number as value and index as the key.
+    2) Apply the rules for looking up the characters surrounding the numbers to see if they are allowed.
+    3) Sum allowed numbers.
+
+    */
+
+
+    // let numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+    let numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+    let symbols = ['*', '#', '$', '+', '%', '/', '-'];
+
+    // unpack input
+    let engine_schematic: Vec<String> = input.0;
+    let mut engine_schematic_chars: Vec<char> = Vec::new();
+    let num_lines = input.1;
+    let line_width: usize= input.2;
+
+    // create vector of all characters
+    for line in engine_schematic {
+        for c in line.chars() {
+            engine_schematic_chars.push(c);
+        }
     }
 
+    // pick out all numbers from engine schematic
+    let mut parts: Vec<char> = Vec::new();
+    let mut parts_map: BTreeMap<usize, char> = BTreeMap::new();
+    let mut idx: usize = 0;
+    for c in &engine_schematic_chars {
+        if numbers.contains(&c) {
+            parts.push(*c);
+            parts_map.insert(idx, *c);
+        }
+        idx += 1;
+    }
+
+    // insert dummy idx at the end 
+    parts_map.insert(idx+1, 'X');
+
+    println!("The parts map is: {:?}", parts_map);
+
+    // combine numbers with keys that are next to each other 
+    // as long as they are on the same "line" i.e., their index / line width (rounded down) is equal
+    let mut previous_key: usize = 0;
+    // let mut next_key: usize = *parts_map.keys().nth(1).unwrap();
+    let mut number_builder: String = String::new();
+    let mut idx_builder: Vec<usize> = Vec::new();
+    let mut part_numbers: HashMap<String, Vec<usize>> = HashMap::new();
+    for (key, val) in parts_map {
+        // println!("key {}: value {}", key, val);
+
+        // check to see if we can combine numbers
+        if key == previous_key {
+            // combine numbers
+            number_builder.push(val);
+            idx_builder.push(key);
+        } else {
+            if (key)/line_width == (previous_key)/line_width && (key-1 == previous_key) {
+                // combine numbers
+                number_builder.push(val);
+                idx_builder.push(key);
+            } else {
+                // add number from number builder as key and index vector as value to part_numbers map
+                part_numbers.insert(number_builder.clone(), idx_builder.clone());
     
-    "1234".to_string()
+                // reset number builder and index builder
+                number_builder = String::new();
+                number_builder.push(val);
+                idx_builder = Vec::new();
+                idx_builder.push(key);
+    
+            }
+            
+            previous_key = key;
+        }
+    }
+        
+
+    println!("The part numbers are: {:?}", part_numbers);
+
+    
+    //=====================================================
+    // TEST NUMBERS
+    //=====================================================
+    // go through parts numbers to find the valid ones
+    // use the array for each part number and the equations to find the 
+    // indices to check in the character vector
+
+    let mut allowed_part_numbers: Vec<String> = Vec::new();
+
+    for (key, value) in part_numbers {
+        for index in value {
+            // check if edge location
+            if index % line_width == 0 || (index + 1) % line_width == 0 {
+                // apply edge transform for index lookup
+                if index < line_width {
+                    // allowable places in front: index+1, index+linewidth, index+linewidth+1
+                    println!("at index {} there is character{:?}",(index+1), engine_schematic_chars[index+1]);
+                    if symbols.contains(&engine_schematic_chars[index+1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index+line_width]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index+line_width+1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                } else if index % line_width + 1 == num_lines {
+                    // allowable places behind: index-(line width -1), index-linewidth
+                    if symbols.contains(&engine_schematic_chars[index-line_width]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index-line_width-1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    // allowable places in front: index+1 if not last index
+                    if index == engine_schematic_chars.len() {
+                        break;
+                    } else {
+                        if symbols.contains(&engine_schematic_chars[index+1]) {
+                        allowed_part_numbers.push(key);
+                        break;}
+                    } 
+                }
+            } else {
+                if index < line_width {
+                    // allowable places in front: index+1, index+linewidth, index+linewidth+1
+                    println!("at index {} there is character{:?}",(index+1), engine_schematic_chars[index+1]);
+                    if symbols.contains(&engine_schematic_chars[index+1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index+line_width]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index+line_width+1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                } else {
+                    // allowable places behind: index-(line width -1), index-linewidth
+                    if symbols.contains(&engine_schematic_chars[index-line_width]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index-line_width-1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    // allowable places in front: index+1, index+linewidth, index+linewidth+1
+                    if symbols.contains(&engine_schematic_chars[index+1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index+line_width]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if symbols.contains(&engine_schematic_chars[index+line_width+1]) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    println!("The allowed numbers are {:?}", allowed_part_numbers);
+    "42".to_string()
 }
 
 
