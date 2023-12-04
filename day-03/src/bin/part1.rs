@@ -3,7 +3,7 @@ use std::collections::{HashMap, BTreeMap};
 fn main() {
     println!("Hello day 3!");
 
-    let (engine_schematic, num_lines, line_width) = get_input("test2.txt");
+    let (engine_schematic, num_lines, line_width) = get_input("test3.txt");
     println!("number of lines: {},\nline width: {}", num_lines, line_width);
     println!("The engine schematic looks like this => {:?}", engine_schematic);
 
@@ -37,16 +37,6 @@ fn get_input(file_name: &str) -> (Vec<String>, usize, usize) {
     let num_lines: usize = input_vec.len();
     
     return (input_vec, line_width, num_lines);
-}
-
-
-fn test_number_backwards() {
-    //todo
-}
-
-
-fn test_number_forwards() {
-    //todo
 }
 
 
@@ -84,7 +74,8 @@ fn part1(input: (Vec<String>, usize, usize)) -> String {
     // let numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
     let numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-    let symbols = ['*', '#', '$', '+', '%', '/', '-'];
+    let symbols = ['*', '#', '$', '+', '%', '/', '-', '@', '=', '!', '&'];
+    let not_symbols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
 
     // unpack input
     let engine_schematic: Vec<String> = input.0;
@@ -155,7 +146,7 @@ fn part1(input: (Vec<String>, usize, usize)) -> String {
 
     println!("The part numbers are: {:?}", part_numbers);
 
-    
+
     //=====================================================
     // TEST NUMBERS
     //=====================================================
@@ -167,79 +158,192 @@ fn part1(input: (Vec<String>, usize, usize)) -> String {
 
     for (key, value) in part_numbers {
         for index in value {
+            
             // check if edge location
             if index % line_width == 0 || (index + 1) % line_width == 0 {
-                // apply edge transform for index lookup
-                if index < line_width {
-                    // allowable places in front: index+1, index+linewidth, index+linewidth+1
-                    println!("at index {} there is character{:?}",(index+1), engine_schematic_chars[index+1]);
-                    if symbols.contains(&engine_schematic_chars[index+1]) {
-                        allowed_part_numbers.push(key);
-                        break;
-                    } 
-                    if symbols.contains(&engine_schematic_chars[index+line_width]) {
-                        allowed_part_numbers.push(key);
-                        break;
-                    } 
-                    if symbols.contains(&engine_schematic_chars[index+line_width+1]) {
-                        allowed_part_numbers.push(key);
-                        break;
-                    }
-                } else if index % line_width + 1 == num_lines {
-                    // allowable places behind: index-(line width -1), index-linewidth
-                    if symbols.contains(&engine_schematic_chars[index-line_width]) {
-                        allowed_part_numbers.push(key);
-                        break;
-                    } 
-                    if symbols.contains(&engine_schematic_chars[index-line_width-1]) {
-                        allowed_part_numbers.push(key);
-                        break;
-                    } 
-                    // allowable places in front: index+1 if not last index
-                    if index == engine_schematic_chars.len() {
-                        break;
+                
+                if index < line_width { // on first line
+                    println!("this is edge location on first line with index {} and character {}",(index), engine_schematic_chars[index]);
+                    if index%line_width == 0 {
+                        // then at start
+                        if !(not_symbols.contains(&engine_schematic_chars[index+1])) {
+                            allowed_part_numbers.push(key);
+                            break;
+                        }
                     } else {
-                        if symbols.contains(&engine_schematic_chars[index+1]) {
+                        // at end
+                        if !(not_symbols.contains(&engine_schematic_chars[index-1])) {
+                            allowed_part_numbers.push(key);
+                            break;
+                        }
+                    }
+                    //forwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width-1])) {
                         allowed_part_numbers.push(key);
-                        break;}
-                    } 
-                }
-            } else {
-                if index < line_width {
-                    // allowable places in front: index+1, index+linewidth, index+linewidth+1
-                    println!("at index {} there is character{:?}",(index+1), engine_schematic_chars[index+1]);
-                    if symbols.contains(&engine_schematic_chars[index+1]) {
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width])) {
                         allowed_part_numbers.push(key);
                         break;
                     } 
-                    if symbols.contains(&engine_schematic_chars[index+line_width]) {
-                        allowed_part_numbers.push(key);
-                        break;
-                    } 
-                    if symbols.contains(&engine_schematic_chars[index+line_width+1]) {
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width+1])) {
                         allowed_part_numbers.push(key);
                         break;
                     }
-                } else {
-                    // allowable places behind: index-(line width -1), index-linewidth
-                    if symbols.contains(&engine_schematic_chars[index-line_width]) {
+                } else if index / line_width + 1 == num_lines { // on last line
+                    println!("this is edge location on last line with index {} and character {}",(index), engine_schematic_chars[index]);
+                    if index%line_width == 0 {
+                        // then at start
+                        if !(not_symbols.contains(&engine_schematic_chars[index+1])) {
+                            allowed_part_numbers.push(key);
+                            break;
+                        }
+                    } else {
+                        // at end
+                        if !(not_symbols.contains(&engine_schematic_chars[index-1])) {
+                            allowed_part_numbers.push(key);
+                            break;
+                        }
+                    }
+                    // backwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width])) {
                         allowed_part_numbers.push(key);
                         break;
                     } 
-                    if symbols.contains(&engine_schematic_chars[index-line_width-1]) {
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                } else { // middle line
+                    println!("this is edge location in a middle line with index {} and character {}",(index), engine_schematic_chars[index]);
+                    // test for start or end
+                    if index%line_width == 0 {
+                        // then at start
+                        if !(not_symbols.contains(&engine_schematic_chars[index+1])) {
+                            allowed_part_numbers.push(key);
+                            break;
+                        }
+                    } else {
+                        // at end
+                        if !(not_symbols.contains(&engine_schematic_chars[index-1])) {
+                            allowed_part_numbers.push(key);
+                            break;
+                        }
+                    }
+                    // forwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width])) {
                         allowed_part_numbers.push(key);
                         break;
                     } 
-                    // allowable places in front: index+1, index+linewidth, index+linewidth+1
-                    if symbols.contains(&engine_schematic_chars[index+1]) {
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    // backwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width])) {
                         allowed_part_numbers.push(key);
                         break;
                     } 
-                    if symbols.contains(&engine_schematic_chars[index+line_width]) {
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                }
+
+            } else { // non-edge location
+                if index < line_width { // on first line
+                    println!("this is mid location on first line with index {} and character {}",(index), engine_schematic_chars[index]);
+                    //test backwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    //test forwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width])) {
                         allowed_part_numbers.push(key);
                         break;
                     } 
-                    if symbols.contains(&engine_schematic_chars[index+line_width+1]) {
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                } else if index / line_width + 1 == num_lines { // on last line
+                    println!("this is mid location on last line with index {} and character {}",(index), engine_schematic_chars[index]);
+                    //backwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    //forwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                } else { // middle line
+                    println!("this is mid location in a middle line with index {} and character {}",(index), engine_schematic_chars[index]);
+                    //test forwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if !(not_symbols.contains(&engine_schematic_chars[index+line_width+1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    //test backwards
+                    if !(not_symbols.contains(&engine_schematic_chars[index-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width-1])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    }  
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width])) {
+                        allowed_part_numbers.push(key);
+                        break;
+                    } 
+                    if !(not_symbols.contains(&engine_schematic_chars[index-line_width+1])) {
                         allowed_part_numbers.push(key);
                         break;
                     }
@@ -247,8 +351,16 @@ fn part1(input: (Vec<String>, usize, usize)) -> String {
             }
         }
     }
+
     println!("The allowed numbers are {:?}", allowed_part_numbers);
-    "42".to_string()
+    let scores: usize = allowed_part_numbers.iter().map(|s| s.parse::<usize>().unwrap()).sum();
+
+    // let mut scores = 0;
+    // for num in allowed_part_numbers {
+    //     scores = scores + num.parse::<i32>().unwrap();
+    // }
+    // equals: 256307
+    scores.to_string()
 }
 
 
