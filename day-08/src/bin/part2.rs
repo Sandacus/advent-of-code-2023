@@ -8,10 +8,44 @@ fn main() {
 
     let input = get_input("./src/data/input1.txt");
 
-    println!("The number of steps required is: {:?}", part1(input));
+    println!(
+        "The number of steps required is: {:?}",
+        part2(input.clone())
+    );
+    let step_count = part2(input.clone());
+
+    println!("The lcm is: {:?}", find_lcm(step_count));
 }
 
-fn part1(input: Vec<String>) -> i32 {
+fn find_lcm(step_counts: Vec<i64>) -> i64 {
+    fn gcd(a: i64, b: i64) -> i64 {
+        let mut max = a;
+        let mut min = b;
+        if min > max {
+            (max, min) = (min, max);
+        }
+        if b == 0 {
+            a
+        } else {
+            gcd(min, max % min)
+        }
+    }
+    fn lcm(a: i64, b: i64) -> i64 {
+        (a * b) / gcd(a, b)
+    }
+    // lcm(14429, 20570)
+    let mut ans = 1;
+    // let steps: Vec<i64> = vec![18727, 24253, 14429, 20569, 22411, 16271];
+    for num in step_counts {
+        println!("{:?}, {:?}", ans, num);
+        ans = lcm(num, ans);
+    }
+    // 2459591974694542268458020
+    // 78840118559328560351424
+    ans
+}
+
+fn part2(input: Vec<String>) -> Vec<i64> {
     // split input into directions and nodes
     let (mut directions, nodes) = (input[0].chars().collect::<Vec<char>>().clone(), &input[1..]);
 
@@ -25,23 +59,40 @@ fn part1(input: Vec<String>) -> i32 {
         .map(|s| s.to_string())
         .collect();
 
-    println!("The directions are {:?}", directions);
-    println!("The node map is:\n{:?}", node_map);
+    // let mut location_steps: Vec<u64> = (0..start_locations.len()).collect::<Vec<u64>>();
 
-    let mut location = String::from("AAA");
-    let mut counter = 0;
+    let mut location_steps: Vec<i64> = vec![0; start_locations.len()];
 
-    let mut end_reached: bool = false;
-    while !end_reached && counter < 1_000_000_000 {
-        // iterate through locations
-        for i in 0..start_locations.len() {
-            let loc = start_locations[i].clone();
-            start_locations[i] = get_location(&directions, &node_map, loc);
-        }
+    // println!("The directions are {:?}", directions);
+    // println!("The node map is:\n{:?}", node_map);
+
+    // let mut location = String::from("AAA");
+
+    for (i, location) in start_locations.iter().enumerate() {
+        // find the steps to get to node that ends in Z
+        let dirs = directions.clone();
+        // let mut loc = location.clone();
+        let steps = get_steps(dirs, &node_map, location.to_string());
+        location_steps[i] += steps.clone();
+    }
+    println!("Locations steps: {:?}", location_steps);
+    location_steps
+}
+
+fn get_steps(
+    mut directions: Vec<char>,
+    node_map: &HashMap<&str, Vec<&str>>,
+    mut location: String,
+) -> i64 {
+    let mut counter: i64 = 0;
+    while counter < 1_000_000_000 {
+        location = get_location(&directions, &node_map, &location);
         directions = update_directions(directions);
         counter += 1;
-        println!("Count: {:?}", counter);
-        end_reached = start_locations.iter().all(|s| s.ends_with("Z"));
+        // println!("Count: {:?}", counter);
+        if location.ends_with("Z") {
+            break;
+        };
     }
     counter
 }
@@ -49,14 +100,15 @@ fn part1(input: Vec<String>) -> i32 {
 fn get_location<'a>(
     directions: &'a [char],
     node_map: &'a HashMap<&'a str, Vec<&'a str>>,
-    mut location: String,
+    mut location: &String,
 ) -> String {
+    let mut loc = location.as_str();
     match directions[0] {
-        'L' => location = String::from(node_map.get(location.as_str()).unwrap()[0]),
-        'R' => location = String::from(node_map.get(location.as_str()).unwrap()[1]),
+        'L' => loc = node_map.get(loc).unwrap()[0],
+        'R' => loc = node_map.get(loc).unwrap()[1],
         _ => println!("Match not found!"),
     }
-    location
+    loc.to_string().clone()
 }
 
 fn update_directions(mut directions: Vec<char>) -> Vec<char> {
@@ -94,6 +146,6 @@ fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
 fn get_input(path: &str) -> Vec<String> {
     let path = path;
     let contents = lines_from_file(path);
-    println!("File contents: {:?}", contents);
+    // println!("File contents: {:?}", contents);
     contents
 }
