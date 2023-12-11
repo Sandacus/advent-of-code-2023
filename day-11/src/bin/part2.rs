@@ -12,10 +12,12 @@ fn main() {
     let ans = part2(input.clone());
     let duration = start.elapsed().as_secs_f64();
     println!("Time elapsed in expensive_function() is: {:?}s", duration);
-    println!("The answer is: {:?}", ans);
+    println!("The answer is: {:?}", ans); // too low
+    // 82000210 - too low
+    // 82000354 - too low
 }
 
-fn part2(input: Vec<Vec<char>>) -> usize {
+fn part2(input: Vec<Vec<char>>) -> i64 {
     // Expand galaxies!
     // Find rows that need expansion
     let mut rows_expansion: Vec<usize> = Vec::new();
@@ -39,32 +41,13 @@ fn part2(input: Vec<Vec<char>>) -> usize {
     }
 
     // lets add rows and columns based on the expansion coefficient
-    let expansion_coefficient = 1_000_000;
+    let expansion_coefficient: i64 = 1_000_000;
 
     println!("The rows for expansion are:\n{:?}", rows_expansion);
     println!("The cols for expansion are:\n{:?}", cols_expansion);
 
     // lets add in the expansion columns!
     let mut expanded_map: Vec<Vec<char>> = input.clone();
-
-    let row_exp = vec!['*'; input.len()]; //input[rows_expansion[0]].clone(); // copy a row of "."
-
-    for k in 0..expansion_coefficient-1 {
-        for (idx, i) in rows_expansion.iter().enumerate() {
-            expanded_map.insert(i+k+idx, row_exp.clone());
-        }
-    }
-
-    for i in 0..expanded_map.len() {
-        for (idx, j) in cols_expansion.iter().enumerate() {
-            for k in 0..expansion_coefficient-1 {
-                let row_idx = j+k + idx*(expansion_coefficient-1);
-                // println!("j={:?}, k={:?}, idx={:?}, expansion_coefficient={:?}", j, k, idx, expansion_coefficient);
-                // println!("row index is {:?}", row_idx);
-                expanded_map[i].insert(row_idx, '*');
-            }
-        }
-    }
 
     let rows = expanded_map.len();
     let cols = expanded_map[0].len();
@@ -80,25 +63,41 @@ fn part2(input: Vec<Vec<char>>) -> usize {
     }
 
     // get the galaxy pairs
-    let mut pairs: Vec<usize> = Vec::new();
+    let mut pairs: Vec<i64> = Vec::new();
     for i in 0..galaxies.len() {
         for j in i..galaxies.len() {
             if i != j {
-                let x = (galaxies[j][0]).abs_diff(galaxies[i][0]); // horizontal diff
-                let y = (galaxies[j][1]).abs_diff(galaxies[i][1]); // vertical diff
-                pairs.push(x + y); // get the ceiling number
+                let mut x1: i64 = galaxies[i][0].clone() as i64;
+                let mut x2: i64 = galaxies[j][0].clone() as i64;
+                for row in rows_expansion.clone() { // row expansion
+                    if galaxies[i][0] < row && galaxies[j][0] > row {
+                        x2 += expansion_coefficient - 1;
+                    } else if galaxies[i][0] > row && galaxies[j][0] < row {
+                        x1 += expansion_coefficient - 1;
+                    }
+                }
+                let x = (x2 - x1).abs(); // vertical (row) diff
+
+                let mut y1: i64 = galaxies[i][1].clone() as i64;
+                let mut y2: i64 = galaxies[j][1].clone() as i64;
+                for col in cols_expansion.clone() { // column expansion
+                    if galaxies[i][1] < col && galaxies[j][1] > col {
+                        y2 += expansion_coefficient - 1;
+                    } else if galaxies[i][1] > col && galaxies[j][1] < col {
+                        y1 += expansion_coefficient - 1;
+                    }
+                }
+                let y = (y2 - y1).abs(); // horizontal (column) diff
+
+                pairs.push(x + y); // total distance X + y
             }
         }
     }
     println!("The expanded rows are {:?} and the expanded cols are: {:?}", rows, cols );
     println!("The number of pairs is: {:?}", pairs.len());
-    println!("The total distance of all galaxy pairs is: {:?}", pairs.iter().sum::<usize>());
+    println!("The total distance of all galaxy pairs is: {:?}", pairs.iter().sum::<i64>());
 
-    for row in expanded_map {
-        println!("{:?}", row);
-    }
-
-    pairs.iter().sum::<usize>()
+    pairs.iter().sum::<i64>()
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
