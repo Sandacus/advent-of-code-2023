@@ -72,19 +72,19 @@ fn get_first_move(start_position: [usize; 2], rows: usize, cols: usize) -> [usiz
 
     // look up and if valid send back
     let (up, valid) = look_up(start_position);
-    if valid { return up }
+    if valid { return up; }
 
     // look down
     let (down, valid) = look_down(start_position, rows);
-    if valid { return down }
+    if valid { return down; }
 
     // look left
     let (left, valid) = look_left(start_position);
-    if valid { return left }
+    if valid { return left; }
 
     // look right
     let (right, valid) = look_right(start_position, cols);
-    if valid { return right }
+    if valid { return right; }
 
     panic!("Could find a valid first move from start position: {:?}", start_position);
 }
@@ -109,47 +109,53 @@ fn pathfinder(start_position: [usize; 2], first_move_position: [usize; 2]) -> (u
 
         // use symbol to update the position
         match symbol {
-            '|' => { println!("At |: {:?} -> {:?}",previous_position, position);
+            '|' => {
+                println!("At |: {:?} -> {:?}", previous_position, position);
                 (position, previous_position) = move_ns(position, previous_position); // update to new position
                 symbol = lookup_position(position); // look up symbol corresponding to new position
                 println!("Symbol: {:?} -> Position: {:?}", symbol, position); // print symbol and position
-            },
-            '-' => { println!("At -: {:?} -> {:?}",previous_position, position);
+            }
+            '-' => {
+                println!("At -: {:?} -> {:?}", previous_position, position);
                 (position, previous_position) = move_ew(position, previous_position); // update to new position
                 symbol = lookup_position(position); // look up symbol corresponding to new position
                 println!("Symbol: {:?} -> Position: {:?}", symbol, position); // print symbol and position},
-            },
-            'L' => { println!("At L: {:?} -> {:?}",previous_position, position);
+            }
+            'L' => {
+                println!("At L: {:?} -> {:?}", previous_position, position);
                 (position, previous_position) = move_ne(position, previous_position); // update to new position
                 symbol = lookup_position(position); // look up symbol corresponding to new position
                 println!("Symbol: {:?} -> Position: {:?}", symbol, position); // print symbol and position
-            },
-            'J' => { println!("At J: {:?} -> {:?}",previous_position, position);
+            }
+            'J' => {
+                println!("At J: {:?} -> {:?}", previous_position, position);
                 (position, previous_position) = move_nw(position, previous_position); // update to new position
                 symbol = lookup_position(position); // look up symbol corresponding to new position
                 println!("Symbol: {:?} -> Position: {:?}", symbol, position); // print symbol and position
-            },
-            '7' => { println!("At 7: {:?} -> {:?}",previous_position, position);
+            }
+            '7' => {
+                println!("At 7: {:?} -> {:?}", previous_position, position);
                 (position, previous_position) = move_sw(position, previous_position); // update to new position
                 symbol = lookup_position(position); // look up symbol corresponding to new position
                 println!("Symbol: {:?} -> Position: {:?}", symbol, position); // print symbol and position
-            },
-            'F' => { println!("At F: {:?} -> {:?}",previous_position, position);
+            }
+            'F' => {
+                println!("At F: {:?} -> {:?}", previous_position, position);
                 (position, previous_position) = move_se(position, previous_position); // update to new position
                 symbol = lookup_position(position); // look up symbol corresponding to new position
                 println!("Symbol: {:?} -> Position: {:?}", symbol, position); // print symbol and position
-            },
+            }
             '.' => {
                 println!("NOT A VALID LOCATION => Symbol: {:?} -> Position: {:?}", symbol, position); // print symbol and position
-            },
+            }
             'S' => {
                 println!("'S' -> BACK AT STARTING POSITION");
                 break;
-            },
+            }
             _ => println!("No match found"),
         }
 
-        if count == 1_000_000 {break;}
+        if count == 1_000_000 { break; }
     }
     let mut ans = 0;
     if count % 2 == 0 {
@@ -159,8 +165,9 @@ fn pathfinder(start_position: [usize; 2], first_move_position: [usize; 2]) -> (u
     }
     (ans, path)
 }
+
 // F
-fn move_se(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2],[usize; 2]) {
+fn move_se(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2], [usize; 2]) {
     let temp_pos = current_pos;
     if current_pos[0] < previous_pos[0] { // [0,0] [0,1]
         current_pos[1] += 1;
@@ -172,7 +179,7 @@ fn move_se(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize
     (current_pos, previous_pos)
 }
 
-fn move_sw(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2],[usize; 2]) {
+fn move_sw(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2], [usize; 2]) {
     // 7
     let temp_pos = current_pos;
     if current_pos[0] < previous_pos[0] {
@@ -185,7 +192,7 @@ fn move_sw(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize
     (current_pos, previous_pos)
 }
 
-fn move_nw(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2],[usize; 2]) {
+fn move_nw(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2], [usize; 2]) {
     // J
     let temp_pos = current_pos;
     if current_pos[0] > previous_pos[0] {
@@ -198,7 +205,7 @@ fn move_nw(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize
     (current_pos, previous_pos)
 }
 
-fn move_ne(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2],[usize; 2]) {
+fn move_ne(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2], [usize; 2]) {
     // L
     let temp_pos = current_pos;
     if current_pos[0] > previous_pos[0] {
@@ -211,7 +218,7 @@ fn move_ne(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize
     (current_pos, previous_pos)
 }
 
-fn move_ew(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2],[usize; 2]) {
+fn move_ew(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2], [usize; 2]) {
     // -
     let temp_pos = current_pos;
     if current_pos[1] < previous_pos[1] {
@@ -247,7 +254,7 @@ fn get_start(input: Vec<Vec<char>>) -> [usize; 2] {
             if input[i][j] == 'S' {
                 println!("This is the start position: [{:?}, {:?}]", i, j);
                 (start[0], start[1]) = (i, j);
-                break 'outer
+                break 'outer;
             }
         }
     }
@@ -261,7 +268,7 @@ fn look_right(start_position: [usize; 2], cols: usize) -> ([usize; 2], bool) {
     if start_position[1] + 1 > cols {
         return (start_position, false);
     }
-    let right = [start_position[0], start_position[1]+1];
+    let right = [start_position[0], start_position[1] + 1];
     let symbol = lookup_position(right);
 
     return match symbol {
@@ -269,7 +276,7 @@ fn look_right(start_position: [usize; 2], cols: usize) -> ([usize; 2], bool) {
         '7' => return (right, true),
         'J' => return (right, true),
         _ => return (start_position, false),
-    }
+    };
 }
 
 fn look_left(start_position: [usize; 2]) -> ([usize; 2], bool) {
@@ -278,7 +285,7 @@ fn look_left(start_position: [usize; 2]) -> ([usize; 2], bool) {
     if start_position[1] - 1 < 0 {
         return (start_position, false);
     }
-    let left = [start_position[0], start_position[1]-1];
+    let left = [start_position[0], start_position[1] - 1];
     let symbol = lookup_position(left);
 
     return match symbol {
@@ -286,7 +293,7 @@ fn look_left(start_position: [usize; 2]) -> ([usize; 2], bool) {
         'F' => return (left, true),
         'L' => return (left, true),
         _ => return (start_position, false),
-    }
+    };
 }
 
 fn look_down(start_position: [usize; 2], rows: usize) -> ([usize; 2], bool) {
@@ -295,7 +302,7 @@ fn look_down(start_position: [usize; 2], rows: usize) -> ([usize; 2], bool) {
     if start_position[0] + 1 > rows {
         return (start_position, false);
     }
-    let down = [start_position[0]+1, start_position[1]];
+    let down = [start_position[0] + 1, start_position[1]];
     let symbol = lookup_position(down);
 
     return match symbol {
@@ -303,7 +310,7 @@ fn look_down(start_position: [usize; 2], rows: usize) -> ([usize; 2], bool) {
         'J' => return (down, true),
         'L' => return (down, true),
         _ => return (start_position, false),
-    }
+    };
 }
 
 fn look_up(start_position: [usize; 2]) -> ([usize; 2], bool) {
@@ -312,7 +319,7 @@ fn look_up(start_position: [usize; 2]) -> ([usize; 2], bool) {
     if start_position[0] - 1 < 0 {
         return (start_position, false);
     }
-    let up = [start_position[0]-1, start_position[1]];
+    let up = [start_position[0] - 1, start_position[1]];
     let symbol = lookup_position(up);
 
     return match symbol {
@@ -320,7 +327,7 @@ fn look_up(start_position: [usize; 2]) -> ([usize; 2], bool) {
         '7' => return (up, true),
         'F' => return (up, true),
         _ => return (start_position, false),
-    }
+    };
 }
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
