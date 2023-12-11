@@ -1,16 +1,17 @@
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::path::Path;
+use std::time::{Instant};
+
 
 fn main() {
     println!("Hello, day 11!");
-
     let path = "./src/data/input1.txt";
     let input: Vec<Vec<char>> = get_input(path);
-
+    let start = Instant::now();
     let ans = part2(input.clone());
-    // 10228048 > too low
-    // 10228230
+    let duration = start.elapsed().as_secs_f64();
+    println!("Time elapsed in expensive_function() is: {:?}s", duration);
     println!("The answer is: {:?}", ans);
 }
 
@@ -37,18 +38,31 @@ fn part2(input: Vec<Vec<char>>) -> usize {
         if flag { cols_expansion.push(j) }
     }
 
+    // lets add rows and columns based on the expansion coefficient
+    let expansion_coefficient = 1_000_000;
+
     println!("The rows for expansion are:\n{:?}", rows_expansion);
     println!("The cols for expansion are:\n{:?}", cols_expansion);
 
     // lets add in the expansion columns!
     let mut expanded_map: Vec<Vec<char>> = input.clone();
-    let row_exp = input[rows_expansion[0]].clone(); // copy a row of "."
-    for (i, idx) in rows_expansion.iter().enumerate() {
-        expanded_map.insert(i+idx, row_exp.clone());
+
+    let row_exp = vec!['*'; input.len()]; //input[rows_expansion[0]].clone(); // copy a row of "."
+
+    for k in 0..expansion_coefficient-1 {
+        for (idx, i) in rows_expansion.iter().enumerate() {
+            expanded_map.insert(i+k+idx, row_exp.clone());
+        }
     }
-    for (j, idx) in cols_expansion.iter().enumerate() {
-        for i in 0..expanded_map.len() {
-            expanded_map[i].insert(j+idx, '*');
+
+    for i in 0..expanded_map.len() {
+        for (idx, j) in cols_expansion.iter().enumerate() {
+            for k in 0..expansion_coefficient-1 {
+                let row_idx = j+k + idx*(expansion_coefficient-1);
+                // println!("j={:?}, k={:?}, idx={:?}, expansion_coefficient={:?}", j, k, idx, expansion_coefficient);
+                // println!("row index is {:?}", row_idx);
+                expanded_map[i].insert(row_idx, '*');
+            }
         }
     }
 
@@ -64,10 +78,8 @@ fn part2(input: Vec<Vec<char>>) -> usize {
             }
         }
     }
-    // println!("The coordinates of the galaxies are:\n{:?}", galaxies);
 
     // get the galaxy pairs
-    // let list = vec![1, 2 ,3];
     let mut pairs: Vec<usize> = Vec::new();
     for i in 0..galaxies.len() {
         for j in i..galaxies.len() {
@@ -82,9 +94,9 @@ fn part2(input: Vec<Vec<char>>) -> usize {
     println!("The number of pairs is: {:?}", pairs.len());
     println!("The total distance of all galaxy pairs is: {:?}", pairs.iter().sum::<usize>());
 
-    // for row in expanded_map {
-    //     println!("{:?}", row);
-    // }
+    for row in expanded_map {
+        println!("{:?}", row);
+    }
 
     pairs.iter().sum::<usize>()
 }
