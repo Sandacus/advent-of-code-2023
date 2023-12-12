@@ -20,8 +20,6 @@ fn main() {
 }
 
 fn part1(input: Vec<String>) -> i64 {
-    println!("{:?}", input);
-
     // get the seeds
     let seeds: Vec<i64> = input[0]
         .clone()
@@ -30,32 +28,49 @@ fn part1(input: Vec<String>) -> i64 {
         .map(|n| n.parse::<i64>().unwrap())
         .collect();
 
-    // start map
-    let mut map: Vec<i64> = Vec::new();
+    // get the maps
+    let mut vec_of_maps: Vec<Vec<String>> = Vec::new();
+    let mut map_keys: Vec<String> = Vec::new();
+    for s in input {
+        if s == "" {
+            vec_of_maps.push(map_keys.clone());
+            map_keys = Vec::new();
+        } else {
+            map_keys.push(s);
+        }
+    }
 
+    // convert strings to numbers
+    for mut map_key in vec_of_maps {
+        for i in 1..map_key.len() {
+            map_key[i] = map_key[i].split_whitespace().map(|n| n.clone().parse::<i64>()).unwrap().collect();
+            println!("The nums are: {:?}", map_key[i]);
+        }
+    }
+
+    // Journey of a seed from seed -> location
     // seed to soil
-    map = seed_to_soil(map);
+    // let seed = seed_to_soil(42, &vec_of_maps);
+    // println!("The soil map: \n{:?}", seed);
 
     // soil to fertilizer
-    map = soil_to_fertilizer(map);
+    // map = soil_to_fertilizer(map);
 
     // fertilizer to water
-    map = fertilizer_to_soil(map);
+    // map = fertilizer_to_soil(map);
 
     // water to light
-    map = water_to_light(map);
+    // map = water_to_light(map);
 
     // light to temperature
-    map = light_to_temperature(map);
+    // map = light_to_temperature(map);
 
     // temperature to humidity
-    map = temperature_to_light(map);
+    // map = temperature_to_light(map);
 
     // humidity to location
-    map = humidity_to_location(map);
+    // map = humidity_to_location(map);
 
-    println!("the map is: {:?}", map);
-    println!("the seeds are: {:?}", seeds);
     42
 }
 
@@ -83,19 +98,25 @@ fn soil_to_fertilizer(map: Vec<i64>) -> Vec<i64> {
     map
 }
 
-fn seed_to_soil(map: Vec<i64>) -> Vec<i64> {
-    let s2s_map = "50 98 2";
+fn seed_to_soil(mut seed: i64, vec_of_maps: &Vec<Vec<String>>) -> i64 {
+    // loop over lines in the map to modify seed accordingly
 
-    map
+
+    let l1 = vec![50, 98, 2];
+    let mut seed = 10;
+    // first line
+    if (98 <= seed) && (seed < 98 + 2) {
+        seed = seed - 98 + 50;
+    }
+
+    42 // dummy return
 }
-
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
     let file = File::open(filename).expect("no such file");
     let buf = BufReader::new(file);
     buf.lines()
         .map(|l| l.expect("Could not parse line"))
-        .filter(|l| l != "")
         .collect()
 }
 
