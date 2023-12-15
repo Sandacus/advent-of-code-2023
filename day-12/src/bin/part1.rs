@@ -36,7 +36,7 @@ fn find_combinations() -> i64 {
     println!("The number of ?'s is: {} and total combos is {}", b, combos);
 
     for i in 0..b {
-        
+
     }
 
     42 // dummy return
