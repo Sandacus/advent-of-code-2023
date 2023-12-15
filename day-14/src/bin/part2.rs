@@ -6,7 +6,7 @@ use std::time::Instant;
 fn main() {
     println!("Hello, day 14!");
 
-    let path = "./src/data/test1.txt";
+    let path = "./src/data/input1.txt";
     let input: Vec<Vec<char>> = get_input(path);
     // println!("The input is: {:?}", input);
 
@@ -18,11 +18,16 @@ fn main() {
 }
 
 fn part2(input: Vec<Vec<char>>) -> i64 {
-    let mut tilt_map = input;
-    let cycles = 1;
+    let mut tilt_map = input.clone();
+
+
+    let cycles = 10_000;
+
     let mut load: usize = 0;
-    let mut previous_load = 0;
+    let mut previous_loads: Vec<usize> = Vec::new();
+    let mut cycle_count = 0;
     for i in 0..cycles {
+        cycle_count += 1;
         tilt_map = tilt_north(tilt_map);
         tilt_map = tilt_west(tilt_map);
         tilt_map = tilt_south(tilt_map);
@@ -30,32 +35,35 @@ fn part2(input: Vec<Vec<char>>) -> i64 {
         load = calculate_weight(&tilt_map);
         println!("Cycle number: {:?} => North load: {}", i+1, load);
 
-        // if load == previous_load {
-        //     break;
-        // }
-        previous_load = load;
+        // don't have to loop to 1_000_000_000 !!!!
+        // see if there is a cycle and when you get a factor of 1_000_000_000
+        // and have seen the load before you know the load
+        if (previous_loads.contains(&load)) && (1_000_000_000 % cycle_count == 0) {
+            println!("Cycle count = {}", cycle_count);
+            break;
+        }
+        previous_loads.push(load);
     }
 
-    for line in &tilt_map {
-        println!("{:?}", line);
-    }
-
-    // let load = calculate_weight(&tilt_map);
+    // visualise result
+    // for line in &tilt_map {
+    //     println!("{:?}", line);
+    // }
 
     load as i64
 }
 
 fn tilt_east(mut m: Vec<Vec<char>>) -> Vec<Vec<char>> {
     for i in 0..m.len() {
-        for j in m[0].len()-1..0 {
+        for j in (0..m[0].len()-1).rev() {
             if m[i][j] == 'O' {
                 // while loop for keep moving '0' east if space permits
-                let mut idx = j - 1;
-                while m[i][idx] == '.' {
-                    m[i][idx] = '0';
-                    m[i][idx + 1] = '.';
-                    if idx == 0 { break; }
-                    idx -= 1;
+                let mut idx = j;
+                while m[i][idx+1] == '.' {
+                    m[i][idx+1] = 'O';
+                    m[i][idx] = '.';
+                    if idx == m[0].len()-2 { break; }
+                    idx += 1;
                 }
             }
         }
@@ -66,15 +74,16 @@ fn tilt_east(mut m: Vec<Vec<char>>) -> Vec<Vec<char>> {
 fn tilt_south(mut m: Vec<Vec<char>>) -> Vec<Vec<char>> {
     // loop over all columns
     for j in 0..m[0].len() {
-        for i in m.len()-1..0 {
+        for i in (0..m.len()-1).rev() {
+
             if m[i][j] == 'O' {
                 // while loop for keep moving '0' south if space permits
-                let mut idx = i - 1;
+                let mut idx = i+1;
                 while m[idx][j] == '.' {
                     m[idx][j] = 'O';
-                    m[idx + 1][j] = '.';
-                    if idx == 0 { break; }
-                    idx -= 1;
+                    m[idx-1][j] = '.';
+                    if idx >= m.len()-1 { break; }
+                    idx += 1;
                 }
             }
         }
@@ -89,7 +98,7 @@ fn tilt_west(mut m: Vec<Vec<char>>) -> Vec<Vec<char>> {
                 // while loop for keep moving '0' west if space permits
                 let mut idx = j - 1;
                 while m[i][idx] == '.' {
-                    m[i][idx] = '0';
+                    m[i][idx] = 'O';
                     m[i][idx + 1] = '.';
                     if idx == 0 { break; }
                     idx -= 1;

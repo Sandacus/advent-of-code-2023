@@ -5,7 +5,7 @@ use std::path::Path;
 fn main() {
     println!("Hello, day 14!");
 
-    let path = "./src/data/cycle3.txt";
+    let path = "./src/data/input1.txt";
     let input: Vec<Vec<char>> = get_input(path);
     // println!("The input is: {:?}", input);
 
@@ -15,8 +15,8 @@ fn main() {
 
 fn part1(input: Vec<Vec<char>>) -> i64 {
 
-    let tilt_map = input.clone();
-    // tilt_map = tilt_rocks(input);
+    let mut tilt_map = input.clone();
+    tilt_map = tilt_rocks(tilt_map);
 
     let load = calculate_weight(&tilt_map);
 
