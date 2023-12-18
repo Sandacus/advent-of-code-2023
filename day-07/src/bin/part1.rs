@@ -2,19 +2,18 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::path::Path;
+use std::time::Instant;
 
 fn main() {
     println!("Hello, day 7!");
+    let path = "./src/data/input1.txt";
+    let input = get_input(path);
 
-    let input = get_input();
-    let nums: Vec<_> = input
-        .into_iter()
-        .filter_map(|s| s.replace(" ", "").parse::<i64>().ok())
-        .collect();
-    println!("{:?}", nums);
-    part1();
-
-    get_hand_type();
+    let start = Instant::now();
+    let ans = part1(input);
+    println!("The answer is: {:?}", ans);
+    let duration = start.elapsed();
+    println!("Time elapsed is: {:?}", duration);
 }
 
 
@@ -27,21 +26,20 @@ fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
         .collect()
 }
 
-fn get_input() -> Vec<String> {
-    let path = "./src/bin/test1.txt";
-    let contents = lines_from_file(path);
+fn get_input(filename: impl AsRef<Path>) -> Vec<String> {
+    let contents = lines_from_file(filename);
     println!("File contents: {:?}", contents);
     contents
 }
 
 
-fn part1() {
+fn part1(input: Vec<String>) -> i32 {
     // TODO
     // get the input
-    let input = get_input();
+    // let input = get_input();
 
     // make a vector of the hands
-    let hands: Vec<String> = input
+    let mut hands: Vec<String> = input
         .iter()
         .map(|s| s[..5].to_string())
         .collect();
@@ -52,14 +50,56 @@ fn part1() {
         .map(|s| s[6..].to_string())
         .collect();
 
-    // make a vector of the hand type e.g., 3 of a kind
-
     println!("{:?}\n{:?}", hands, bids);
 
+    // create a hashmap of hands and bids
+    let mut hands_map = HashMap::new();
+    for i in 0..hands.len() {
+        hands_map.insert(hands[i].clone(), bids[i].parse::<i32>().unwrap());
+    }
+    println!("The hands: bids maps is => {:?}", hands_map);
+
+    // rank the hands with bubble sort
+    for i in 0..hands.len()-1 {
+        let mut swapped = false;
+        for j in 0..hands.len()-1-i {
+            if hands[j] == get_higher_rank(&hands[j], &hands[j+1]) {
+                let dummy = hands[j].clone();
+                hands[j] = hands[j+1].clone();
+                hands[j+1] = dummy;
+                swapped = true;
+            }
+        }
+        if !swapped { break }
+    }
+
+    println!("The hand rank is: {:?}", hands);
+
+    let mut winnings = 0;
+    for (i, hand) in hands.iter().enumerate() {
+        winnings += hands_map.get(hand).unwrap() * (i as i32 + 1);
+    }
+    println!("The winnings are: {:?}", winnings);
+
+    winnings // return
 }
 
+fn get_higher_rank(hand1: &String, hand2: &String) -> String {
+    let score1 = get_hand_rank(hand1);
+    let score2 = get_hand_rank(hand2);
 
-fn get_hand_type() {
+    if score1 > score2 {
+        return hand1.clone();
+    } else if score1 < score2 {
+        return hand2.clone();
+    } else if score1 == score2 {
+        return decider(hand1, hand2)
+    }
+
+    panic!("Can't find a higher rank in fn get_higher_rank!") //return
+}
+
+fn get_hand_rank(hand: &String) -> i32 {
     let mut card_count = HashMap::new();
     card_count.insert('2', 0);
     card_count.insert('3', 0);
@@ -74,9 +114,7 @@ fn get_hand_type() {
     card_count.insert('K', 0);
     card_count.insert('A', 0);
 
-    let test_hand = "32T3K";
-
-    for card in test_hand.chars() {
+    for card in hand.chars() {
         match card {
             '2' => *card_count.entry('2'.to_owned()).or_default() += 1,
             '3' => *card_count.entry('3'.to_owned()).or_default() += 1,
@@ -91,21 +129,62 @@ fn get_hand_type() {
             'Q' => *card_count.entry('Q'.to_owned()).or_default() += 1,
             'K' => *card_count.entry('K'.to_owned()).or_default() += 1,
             'A' => *card_count.entry('A'.to_owned()).or_default() += 1,
-             _  => panic!(),
+            _ => panic!(),
         }
     }
 
+    // get rid of zeros
+    card_count.retain(|_, &mut v| v != 0);
+
+    let max_cards = card_count.values().max().unwrap();
+    let min_cards = card_count.values().min().unwrap();
+
     // Now test for the type of hand
-    // 5 of a kind
-    // 4 of a kind
-    // full house
-    // 3 of a kind
-    // 2 pair
-    // high card
+    let hand_rank = match max_cards {
+        5 => 7,
+        4 => 6,
+        3 => if *min_cards == 2 { 5 } else { 4 },
+        2 => if card_count.len() == 3 { 3 } else { 2 },
+        1 => 1,
+        _ => panic!(),
+    };
 
-    // find number of same cards
-    let num_same_cards = Some(card_count.values().max());
+    // make decider function for equal hands
+    // decider(hand1, hand2);
 
-    println!("{:?}", card_count);
+    hand_rank // return
+}
 
+fn decider(hand1: &String, hand2: &String) -> String {
+    // compare the two hands
+    let cards1: Vec<char> = hand1.chars().collect();
+    let cards2: Vec<char> = hand2.chars().collect();
+    for i in 0..5 {
+        if card_value(cards1[i]) > card_value(cards2[i]) {
+            return hand1.clone();
+        } else if card_value(cards1[i]) < card_value(cards2[i]) {
+            return hand2.clone();
+        } else { continue }
+    }
+    println!("cards 1: {:?} vs cards 2: {:?}", cards1, cards2);
+    panic!("Couldn't decide a higher hand in fn decider!") // return
+}
+
+fn card_value(card: char) -> i32 {
+    match card {
+        '2' => 2,
+        '3' => 3,
+        '4' => 4,
+        '5' => 5,
+        '6' => 6,
+        '7' => 7,
+        '8' => 8,
+        '9' => 9,
+        'T' => 10,
+        'J' => 11,
+        'Q' => 12,
+        'K' => 13,
+        'A' => 15,
+        _ => panic!(),
+    }
 }

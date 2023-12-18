@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use std::time::Instant;
 
 fn main() {
     println!("Hello, day 5!");
@@ -8,8 +9,11 @@ fn main() {
     let path = "./src/data/input1.txt";
     let input = get_input(path);
 
+    let start = Instant::now();
     let ans = part1(input);
     println!("The answer is: {:?}", ans);
+    let duration = start.elapsed();
+    println!("Time elapsed is: {:?}", duration);
 }
 
 fn part1(input: Vec<String>) -> i64 {
