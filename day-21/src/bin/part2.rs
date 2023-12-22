@@ -5,11 +5,11 @@ use std::time::Instant;
 
 fn main() {
     println!("Hello, day 21!");
-    let path = "./src/data/input1.txt";
+    let path = "./src/data/test1.txt";
     let input = get_input(path);
 
     let start = Instant::now();
-    let ans = part1(input);
+    let ans = part2(input);
     println!("The answer is: {:?}", ans);
     let duration = start.elapsed();
     println!("Time elapsed is: {:?}", duration);
@@ -21,7 +21,7 @@ struct Point {
     y: usize,
 }
 
-fn part1(input: Vec<Vec<char>>) -> i64 {
+fn part2(input: Vec<Vec<char>>) -> i64 {
     // find start position, S
     let mut start = Point {x: 0, y: 0};
     for (i, v) in input.iter().enumerate() {
@@ -37,7 +37,7 @@ fn part1(input: Vec<Vec<char>>) -> i64 {
     let mut new_points: Vec<Point> = Vec::new();
     let mut plots: Vec<Point> = vec![start];
 
-    let steps: usize = 64;
+    let steps: usize = 6;
     // loop through steps
     for step in 0..steps {
         new_points.clear();
