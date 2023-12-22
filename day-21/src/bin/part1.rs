@@ -137,7 +137,7 @@ fn check_south(p: &Point, map: &Vec<Vec<char>>) -> bool {
 
 fn check_east(p: &Point, map: &Vec<Vec<char>>) -> bool {
     let mut valid_move = false;
-    if p.x < map[0].len()-1 {
+    if p.y < map[0].len()-1 {
         match map[p.x][p.y+1] {
             '.' => valid_move = true,
             '#' => valid_move = false,
@@ -150,7 +150,7 @@ fn check_east(p: &Point, map: &Vec<Vec<char>>) -> bool {
 
 fn check_west(p: &Point, map: &Vec<Vec<char>>) -> bool {
     let mut valid_move = false;
-    if p.x > 0 {
+    if p.y > 0 {
         match map[p.x][p.y-1] {
             '.' => valid_move = true,
             '#' => valid_move = false,
@@ -160,7 +160,6 @@ fn check_west(p: &Point, map: &Vec<Vec<char>>) -> bool {
     }
     valid_move
 }
-
 
 fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
     let file = File::open(filename).expect("no such file");

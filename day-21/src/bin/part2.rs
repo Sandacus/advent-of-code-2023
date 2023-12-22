@@ -22,6 +22,9 @@ struct Point {
 }
 
 fn part2(input: Vec<Vec<char>>) -> i64 {
+    let rows = input.len()-1;
+    let cols = input[0].len()-1;
+
     // find start position, S
     let mut start = Point {x: 0, y: 0};
     for (i, v) in input.iter().enumerate() {
@@ -37,39 +40,43 @@ fn part2(input: Vec<Vec<char>>) -> i64 {
     let mut new_points: Vec<Point> = Vec::new();
     let mut plots: Vec<Point> = vec![start];
 
-    let steps: usize = 6;
+    let steps: usize = 10;
     // loop through steps
     for step in 0..steps {
         new_points.clear();
         // loop through current locations
         for loc in &plots {
             // for each location check north, south, east and west and collect new valid points
-            if check_north(&loc, &input) {
-                let p_n = get_point(&loc, 'n');
+            let (north_valid, north_new_map) = check_north(&loc, &input);
+            if north_valid {
+                let p_n = get_point(&loc, 'n', north_new_map, rows, cols);
                 if !new_points.contains(&p_n) {
                     new_points.push(p_n.clone());
                     println!("in check north: {:?}", p_n);
                 }
 
             }
-            if check_south(&loc, &input) {
-                let p_s = get_point(&loc, 's');
+            let (south_valid, south_new_map) = check_south(&loc, &input);
+            if south_valid {
+                let p_s = get_point(&loc, 's', south_new_map, rows, cols);
                 if !new_points.contains(&p_s) {
                     new_points.push(p_s.clone());
                     println!("in check south: {:?}", p_s);
                 }
 
             }
-            if check_east(&loc, &input) {
-                let p_e = get_point(&loc, 'e');
+            let (east_valid, east_new_map) = check_east(&loc, &input);
+            if east_valid {
+                let p_e = get_point(&loc, 'e', east_new_map, rows, cols);
                 if !new_points.contains(&p_e) {
                     new_points.push(p_e.clone());
                     println!("in check east: {:?}", p_e);
                 }
 
             }
-            if check_west(&loc, &input) {
-                let p_w = get_point(&loc, 'w');
+            let (west_valid, west_new_map) = check_west(&loc, &input);
+            if west_valid {
+                let p_w = get_point(&loc, 'w', west_new_map, rows, cols);
                 if !new_points.contains(&p_w) {
                     new_points.push(p_w.clone());
                     println!("in check west: {:?}", p_w);
@@ -85,32 +92,53 @@ fn part2(input: Vec<Vec<char>>) -> i64 {
     plots.len() as i64 // return
 }
 
-fn get_point(p: &Point, dir: char) -> Point {
-    if dir == 'n' {
+fn get_point(p: &Point, dir: char, new_map: bool, rows: usize, cols: usize) -> Point {
+    if dir == 'n' && !new_map {
         let x_n = p.x.clone() - 1;
         let y_n = p.y.clone();
         return Point{ x: x_n, y: y_n };
     }
-    if dir == 's' {
+    if dir == 'n' && new_map {
+        let x_n = rows;
+        let y_n = p.y.clone();
+        return Point{ x: x_n, y: y_n };
+    }
+    if dir == 's' && !new_map {
         let x_s = p.x.clone() + 1;
         let y_s = p.y.clone();
         return Point{ x: x_s, y: y_s };
     }
-    if dir == 'e' {
+    if dir == 's' && new_map {
+        let x_s = 0;
+        let y_s = p.y.clone();
+        return Point{ x: x_s, y: y_s };
+    }
+    if dir == 'e' && !new_map {
         let x_e = p.x.clone();
         let y_e = p.y.clone() + 1;
         return Point{ x: x_e, y: y_e };
     }
-    if dir == 'w' {
+    if dir == 'e' && new_map {
+        let x_e = p.x.clone();
+        let y_e = 0;
+        return Point{ x: x_e, y: y_e };
+    }
+    if dir == 'w' && !new_map {
         let x_w = p.x.clone();
         let y_w = p.y.clone() - 1;
+        return Point{ x: x_w, y: y_w };
+    }
+    if dir == 'w' && new_map {
+        let x_w = p.x.clone();
+        let y_w = cols;
         return Point{ x: x_w, y: y_w };
     }
     p.clone()
 }
 
-fn check_north(p: &Point, map: &Vec<Vec<char>>) -> bool {
-    let mut valid_move = false;
+fn check_north(p: &Point, map: &Vec<Vec<char>>) -> (bool, bool) {
+    let mut valid_move = false; // check whether it's a plot '.'
+    let mut new_map = false; // check whether leaves map onto new map
     if p.x > 0 {
         match map[p.x-1][p.y] {
             '.' => valid_move = true,
@@ -118,47 +146,78 @@ fn check_north(p: &Point, map: &Vec<Vec<char>>) -> bool {
             'S' => valid_move = true,
             _ => panic!("==> No point found in check_north! <==")
         }
+    } else {
+        match map[map.len()-1][p.y] { // look up at bottom of map
+            '.' => (valid_move, new_map) = (true, true),
+            '#' => (valid_move, new_map) = (false, true),
+            'S' => (valid_move, new_map) = (true, true),
+            _ => panic!("==> No point found in check_north! <==")
+        }
     }
-    valid_move
+    (valid_move, new_map)
 }
 
-fn check_south(p: &Point, map: &Vec<Vec<char>>) -> bool {
-    let mut valid_move = false;
+fn check_south(p: &Point, map: &Vec<Vec<char>>) -> (bool, bool) {
+    let mut valid_move = false; // check whether it's a plot '.'
+    let mut new_map = false; // check whether leaves map onto new map
     if p.x < map.len()-1 {
         match map[p.x+1][p.y] {
             '.' => valid_move = true,
             '#' => valid_move = false,
             'S' => valid_move = true,
-            _ => panic!("==> No point found in check_north! <==")
+            _ => panic!("==> No point found in check_south! <==")
+        }
+    } else {
+        match map[0][p.y] { // look down onto top of new map
+            '.' => (valid_move, new_map) = (true, true),
+            '#' => (valid_move, new_map) = (false, true),
+            'S' => (valid_move, new_map) = (true, true),
+            _ => panic!("==> No point found in check_south! <==")
         }
     }
-    valid_move
+    (valid_move, new_map)
 }
 
-fn check_east(p: &Point, map: &Vec<Vec<char>>) -> bool {
-    let mut valid_move = false;
-    if p.x < map[0].len()-1 {
+fn check_east(p: &Point, map: &Vec<Vec<char>>) -> (bool, bool) {
+    let mut valid_move = false; // check whether it's a plot '.'
+    let mut new_map = false; // check whether leaves map onto new map
+    if p.y < map[0].len()-1 {
         match map[p.x][p.y+1] {
             '.' => valid_move = true,
             '#' => valid_move = false,
             'S' => valid_move = true,
-            _ => panic!("==> No point found in check_north! <==")
+            _ => panic!("==> No point found in check_east! <==")
+        }
+    } else {
+        match map[p.x][0] { // look right onto new side of map
+            '.' => (valid_move, new_map) = (true, true),
+            '#' => (valid_move, new_map) = (false, true),
+            'S' => (valid_move, new_map) = (true, true),
+            _ => panic!("==> No point found in check_east! <==")
         }
     }
-    valid_move
+    (valid_move, new_map)
 }
 
-fn check_west(p: &Point, map: &Vec<Vec<char>>) -> bool {
-    let mut valid_move = false;
-    if p.x > 0 {
+fn check_west(p: &Point, map: &Vec<Vec<char>>) -> (bool, bool) {
+    let mut valid_move = false; // check whether it's a plot '.'
+    let mut new_map = false; // check whether leaves map onto new map
+    if p.y > 0 {
         match map[p.x][p.y-1] {
             '.' => valid_move = true,
             '#' => valid_move = false,
             'S' => valid_move = true,
-            _ => panic!("==> No point found in check_north! <==")
+            _ => panic!("==> No point found in check_west! <==")
+        }
+    } else {
+        match map[p.x][map[0].len()] {
+            '.' => (valid_move, new_map) = (true, true),
+            '#' => (valid_move, new_map) = (false, true),
+            'S' => (valid_move, new_map) = (true, true),
+            _ => panic!("==> No point found in check_west! <==")
         }
     }
-    valid_move
+    (valid_move, new_map)
 }
 
 
