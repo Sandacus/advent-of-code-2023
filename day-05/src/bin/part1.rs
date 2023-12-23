@@ -43,7 +43,6 @@ fn part1(input: Vec<String>) -> i64 {
     let s2s_maps = Vec::from(&vec_of_maps[1][1..]);
     let s2f_maps = Vec::from(&vec_of_maps[2][1..]);
     let f2w_maps = Vec::from(&vec_of_maps[3][1..]);
-    println!("fertilizer to water map: {:?}", f2w_maps);
     let w2l_maps = Vec::from(&vec_of_maps[4][1..]);
     let l2t_maps = Vec::from(&vec_of_maps[5][1..]);
     let t2h_maps = Vec::from(&vec_of_maps[6][1..]);

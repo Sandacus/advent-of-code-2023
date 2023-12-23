@@ -2,7 +2,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::time::Instant;
-use rayon::prelude::*;
+// use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use indicatif::ProgressIterator;
 
 fn main() {
     println!("Hello, day 5!");
@@ -48,6 +49,7 @@ fn part2(input: Vec<String>) -> i64 {
     let mut loc_vec = Vec::new();
     for (idx, pair) in seeds.iter().enumerate() {
         println!("Start seed pair {}/{}", idx+1, seeds.len());
+        let start = Instant::now();
         let mut seed_vec = Vec::new();
         for x in 0..pair.1 {
             seed_vec.push(pair.0 + x);
@@ -57,42 +59,51 @@ fn part2(input: Vec<String>) -> i64 {
         let mut locations = seed_vec;
 
         println!("Start seed:soil map");
-        locations = locations.par_iter()
+        locations = locations.iter()
+            .progress()
             .map(|&x| start_to_destination(x, &s2s_maps))
             .collect::<Vec<i64>>();
 
         println!("Start soil:fertilizer map");
-        locations = locations.par_iter()
+        locations = locations.iter()
+            .progress()
             .map(|&x| start_to_destination(x, &s2f_maps))
             .collect::<Vec<i64>>();
 
         println!("Start fertilizer:water map");
-        locations = locations.par_iter()
+        locations = locations.iter()
+            .progress()
             .map(|&x| start_to_destination(x, &f2w_maps))
             .collect::<Vec<i64>>();
 
         println!("Start water:light map");
-        locations = locations.par_iter()
+        locations = locations.iter()
+            .progress()
             .map(|&x| start_to_destination(x, &w2l_maps))
             .collect::<Vec<i64>>();
 
         println!("Start light:temperature map");
-        locations = locations.par_iter()
+        locations = locations.iter()
+            .progress()
             .map(|&x| start_to_destination(x, &l2t_maps))
             .collect::<Vec<i64>>();
 
         println!("Start temperature:humidity map");
-        locations = locations.par_iter()
+        locations = locations.iter()
+            .progress()
             .map(|&x| start_to_destination(x, &t2h_maps))
             .collect::<Vec<i64>>();
 
         println!("Start humidity:location map");
-        locations = locations.par_iter()
+        locations = locations.iter()
+            .progress()
             .map(|&x| start_to_destination(x, &h2l_maps))
             .collect::<Vec<i64>>();
 
         loc_vec.push(locations.iter().min().unwrap().clone());
 
+        let duration = start.elapsed();
+        println!("Time elapsed is: {:?}", duration);
     }
 
     loc_vec.iter().min().unwrap().clone() // return

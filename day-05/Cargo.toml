@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 rayon = { version = "1.8.0", features = [] }
+indicatif = "0.17.7"
