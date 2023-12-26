@@ -13,10 +13,11 @@ fn main() {
     let (ans, pipeline) = part2(input.clone());
     println!("The answer is: {:?}", ans);
 
-    visualize_path(pipeline, &input);
+    // make a text file of output -> pic.txt
+    // visualize_path(pipeline, &input);
 }
 
-fn visualize_path(pipeline: Vec<[usize; 2]>, input: &Vec<Vec<char>>) -> Result<()> {
+fn visualize_path(pipeline: Vec<[usize; 2]>, input: &Vec<Vec<char>>) {
     // visualize the path taken
     let rows = input.len();
     let cols = input[0].len();
@@ -26,7 +27,7 @@ fn visualize_path(pipeline: Vec<[usize; 2]>, input: &Vec<Vec<char>>) -> Result<(
     for i in 0..rows {
         for j in 0..cols {
             if pipeline.contains(&[i, j]) {
-                pic[i][j] = '*';
+                pic[i][j] = input[i][j];
             } else if input[i][j] == '.' {
                 pic[i][j] = '.';
             } else { pic[i].push(' '); }
@@ -35,14 +36,13 @@ fn visualize_path(pipeline: Vec<[usize; 2]>, input: &Vec<Vec<char>>) -> Result<(
 
     println!("{:?}", pic);
 
-    let mut file = File::create("pic.txt")?;
+    let mut file = File::create("./src/data/pic.txt");
 
     for row in pic {
         let line: String = row.into_iter().collect();
-        writeln!(file, "{}", line)?;
+        writeln!(file.as_mut().expect("pipe path pic"), "{}", line);
     }
 
-    Ok(())
 }
 
 fn lookup_position(pos: [usize; 2]) -> char {
@@ -166,7 +166,6 @@ fn pathfinder(start_position: [usize; 2], first_move_position: [usize; 2]) -> (u
     (ans, path)
 }
 
-// F
 fn move_se(mut current_pos: [usize; 2], mut previous_pos: [usize; 2]) -> ([usize; 2], [usize; 2]) {
     let temp_pos = current_pos;
     if current_pos[0] < previous_pos[0] { // [0,0] [0,1]

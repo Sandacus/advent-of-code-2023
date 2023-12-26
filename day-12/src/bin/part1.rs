@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::path::Path;
+use std::collections::HashMap;
 
 fn main() {
     println!("Hello, day 12!");
@@ -13,13 +14,23 @@ fn main() {
     println!("The answer is: {:?}", ans);
 }
 
+fn fib (cache: &mut HashMap<u32, u32>, arg: u32) -> u32 {
+    cache.get(&arg).map(|entry| entry.clone()).unwrap_or_else(|| {
+        let result = match arg {
+            0 => 0,
+            1 => 1,
+            n => fib(cache, n - 1) + fib(cache, n - 2),
+        };
+        cache.insert(arg, result.clone());
+        result
+    })
+}
+
 fn part1(input: Vec<Vec<String>>) -> i64 {
 
-    // let mut combo_vec: Vec<i64> = Vec::new();
-    // for line in input {
-    //     let combos = find_combinations(line);
-    //     combo_vec.push(combos);
-    // }
+    let x = 10;
+    println!("Fib of {} is {}", x, fib(&mut HashMap::new(), x));
+
 
     find_combinations();
 
@@ -31,8 +42,8 @@ fn find_combinations() -> i64 {
     let s: Vec<char> = "???.###".chars().collect();
     let n = [1, 1, 3];
 
-    let b: i64 = s.iter().map(|c| if c == '?' { 1 } else { 0 }).sum();
-    let combos: i64 = 2_i64.pow(b as u32);
+    let b: u32 = s.iter().map(|c| if *c == '?' { 1 } else { 0 }).sum();
+    let combos: i64 = 2_i64.pow(b);
     println!("The number of ?'s is: {} and total combos is {}", b, combos);
 
     for i in 0..b {

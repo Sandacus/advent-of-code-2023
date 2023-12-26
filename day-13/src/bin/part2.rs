@@ -9,13 +9,15 @@ fn main() {
     let input: Vec<Vec<String>> = get_input(path);
     // println!("The input is: {:?}", input);
 
-    let ans = part1(input.clone());
+    let ans = part2(input.clone());
     println!("The answer is: {:?}", ans); // 1203, 3548, 20527, 27807 - too low
 }
 
-fn part1(input: Vec<Vec<String>>) -> i64 {
+fn part2(input: Vec<Vec<String>>) -> i64 {
     // find rows reflections
     let mut score = 0;
+
+    find_smudge();
 
     // column reflections
     for pattern in &input {
@@ -31,6 +33,17 @@ fn part1(input: Vec<Vec<String>>) -> i64 {
     println!("The score after the rows is: {:?}", score);
 
     score
+}
+
+fn find_smudge(mir: Vec<String>) {
+    // Find the 1 smudge in the mirror.
+    // Go row by row and compare the string to the one below and if there is a total of one
+    // this is the smudge. Then swap the character on one of the lines from '.' to '#'.
+    let length = mir.len() - 1;
+
+    for i in 0..length {
+
+    }
 }
 
 fn get_cols_in_vec(pattern: &Vec<String>) -> Vec<String> {
